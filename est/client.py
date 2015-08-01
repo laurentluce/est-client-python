@@ -10,21 +10,22 @@ import OpenSSL.crypto
 
 import est.request
 
-CA_CERTS_PATH = '/tmp/ca_certs.pem'
+IMPLICIT_TRUST_ANCHOR_CERT_PATH = '/tmp/implicit.pem'
 
 class Client(object):
     """API client.
 
     Attributes:
         uri (str): URI prefix to use for requests.
-        
+
         url_prefix (str): URL prefix to use for requests.  scheme://host:port
     """
     url_prefix = None
     username = None
     password = None
+    implicit_trust_anchor_cert_path = None
 
-    def __init__(self, host, port, ca_certs_path):
+    def __init__(self, host, port, implicit_trust_anchor_cert_path):
         """Initialize the client to interact with the EST server.
 
         Args:
@@ -35,7 +36,7 @@ class Client(object):
             ca_certs (str): EST server CA certificates path (PEM).
         """
         self.url_prefix = 'https://%s:%s/.well-known/est' % (host, port)
-        self.ca_certs_path = ca_certs_path
+        self.implicit_trust_anchor_cert_path = implicit_trust_anchor_cert_path
 
     def ca_certs(self):
         """Get CA certificates from the server.
@@ -50,50 +51,61 @@ class Client(object):
             est.errors.RequestError
         """
         url = self.url_prefix + '/cacerts'
-        res = est.request.get(url, verify=self.ca_certs_path)
+        res = est.request.get(url, verify=self.implicit_trust_anchor_cert_path)
 
-        # TODO: Use openssl to convert pkcs7 DER to PEM
         pem = ssl.DER_cert_to_PEM_cert(base64.b64decode(res.content))
-        with open(CA_CERTS_PATH, 'w+') as ca_certs_path:
-            ca_certs_path.write(pem)
-
-        self.ca_certs_path = CA_CERTS_PATH
 
         return pem
 
     def simpleenroll(self, csr):
         url = self.url_prefix + '/simpleenroll'
-        res = est.request.post(url, verify=self.ca_certs_path)
-        
-        return res
+        auth = (self.username, self.password)
+        headers = {'Content-Type': 'application/pkcs10'}
+        res = est.request.post(url, csr, auth=auth, headers=headers,
+            verify=self.implicit_trust_anchor_cert_path)
+        pem = ssl.DER_cert_to_PEM_cert(base64.b64decode(res.content))
+
+        return pem
+
+    def simplereenroll(self, csr, cert_path):
+        url = self.url_prefix + '/simplereenroll'
+        auth = (self.username, self.password)
+        headers = {'Content-Type': 'application/pkcs10'}
+        res = est.request.post(url, csr, auth=auth, headers=headers,
+                verify=self.implicit_trust_anchor_cert_path,
+                cert=cert_path)
+        pem = ssl.DER_cert_to_PEM_cert(base64.b64decode(res.content))
+
+        return pem
 
     def set_basic_auth(self, username, password):
         self.username = username
         self.password = password
 
     def create_csr(self, common_name, country, state, city, organization,
-        organizational_unit, serial_number, valid_days):
+        organizational_unit):
         """
         """
         key = OpenSSL.crypto.PKey()
         key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
 
-        cert = OpenSSL.crypto.X509()
-        cert.get_subject().C = country
-        cert.get_subject().ST = state
-        cert.get_subject().L = city
-        cert.get_subject().O = organization
-        cert.get_subject().OU = organizational_unit
-        cert.get_subject().CN = common_name
+        req = OpenSSL.crypto.X509Req()
+        req.get_subject().C = country
+        req.get_subject().ST = state
+        req.get_subject().L = city
+        req.get_subject().O = organization
+        req.get_subject().OU = organizational_unit
+        req.get_subject().CN = common_name
 
-        cert.set_serial_number(serial_number)
-        cert.gmtime_adj_notBefore(0)
-        cert.gmtime_adj_notAfter(valid_days * 24 * 60)
-        cert.set_issuer(cert.get_subject())
-        cert.set_pubkey(key)
-        cert.sign(key, 'sha1')
+        req.set_pubkey(key)
+        req.sign(key, 'sha256')
 
-        return OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
-            cert)
+        private_key = OpenSSL.crypto.dump_privatekey(
+            OpenSSL.crypto.FILETYPE_PEM, key)
+
+        csr = OpenSSL.crypto.dump_certificate_request(
+                   OpenSSL.crypto.FILETYPE_PEM, req)
+
+        return private_key, csr
 
 
