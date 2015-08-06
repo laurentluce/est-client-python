@@ -23,7 +23,8 @@ state = 'Massachusetts'
 city = 'Boston'
 organization = 'Cisco Systems'
 organizational_unit = 'ENG'
-private_key, csr = client.create_csr(common_name, country, state, city, organization, organizational_unit)
+private_key, csr = client.create_csr(common_name, country, state, city,
+                                     organization, organizational_unit)
 
 client_cert = client.simpleenroll(csr)
 
