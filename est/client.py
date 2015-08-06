@@ -5,6 +5,7 @@ This is the first object to instantiate to interact with the API.
 
 import base64
 import ssl
+import subprocess
 
 import OpenSSL.crypto
 
@@ -33,12 +34,12 @@ class Client(object):
 
             port (int): EST server port number.
 
-            ca_certs (str): EST server CA certificates path (PEM).
+            cacerts (str): EST server CA certificates path (PEM).
         """
         self.url_prefix = 'https://%s:%s/.well-known/est' % (host, port)
         self.implicit_trust_anchor_cert_path = implicit_trust_anchor_cert_path
 
-    def ca_certs(self):
+    def cacerts(self):
         """Get CA certificates from the server.
 
         Args:
@@ -63,18 +64,18 @@ class Client(object):
         headers = {'Content-Type': 'application/pkcs10'}
         res = est.request.post(url, csr, auth=auth, headers=headers,
             verify=self.implicit_trust_anchor_cert_path)
-        pem = ssl.DER_cert_to_PEM_cert(base64.b64decode(res.content))
+        pem = self.pkcs7_to_pem(base64.b64decode(res.content))
 
         return pem
 
-    def simplereenroll(self, csr, cert_path):
+    def simplereenroll(self, csr, cert_path=False):
         url = self.url_prefix + '/simplereenroll'
         auth = (self.username, self.password)
         headers = {'Content-Type': 'application/pkcs10'}
         res = est.request.post(url, csr, auth=auth, headers=headers,
                 verify=self.implicit_trust_anchor_cert_path,
                 cert=cert_path)
-        pem = ssl.DER_cert_to_PEM_cert(base64.b64decode(res.content))
+        pem = self.pkcs7_to_pem(base64.b64decode(res.content))
 
         return pem
 
@@ -108,4 +109,12 @@ class Client(object):
 
         return private_key, csr
 
+    def pkcs7_to_pem(self, pkcs7):
+        stdout, stderr = subprocess.Popen(
+            ['openssl', 'pkcs7', '-inform', 'DER', '-outform', 'PEM',
+             '-print_certs'],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE
+        ).communicate(pkcs7)
 
+        return stdout
