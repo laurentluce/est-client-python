@@ -8,7 +8,7 @@ import est.client
 
 host = 'testrfc7030.cisco.com'
 port = 8443
-implicit_trust_anchor_cert_path = '/home/laurent/github/est-client-python/est/test/server.pem'
+implicit_trust_anchor_cert_path = 'server.pem'
 
 client = est.client.Client(host, port, implicit_trust_anchor_cert_path)
 ca_certs = client.cacerts()
