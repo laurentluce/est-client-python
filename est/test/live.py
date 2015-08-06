@@ -1,35 +1,56 @@
+import unittest
+
+import OpenSSL.crypto
+
 import est.client
 
-host = 'testrfc7030.cisco.com'
-port = 8443
-implicit_trust_anchor_cert_path = 'server.pem'
+class Test(unittest.TestCase):
 
-client = est.client.Client(host, port, implicit_trust_anchor_cert_path)
+    def setUp(self):
+        host = 'testrfc7030.cisco.com'
+        port = 8443
+        implicit_trust_anchor_cert_path = 'server.pem'
+        self.client = est.client.Client(host, port,
+            implicit_trust_anchor_cert_path)
 
-print client.ca_certs()
+    def set_auth(self):
+        username = 'estuser'
+        password = 'estpwd'
+        self.client.set_basic_auth(username, password)
 
-username = 'estuser'
-password = 'estpwd'
+    def create_csr(self):
+        common_name = 'test'
+        country = 'US'
+        state = 'Massachusetts'
+        city = 'Boston'
+        organization = 'Cisco Systems'
+        organizational_unit = 'ENG'
+        key, csr = self.client.create_csr(common_name, country, state, city,
+            organization, organizational_unit)
+        return csr
 
-client.set_basic_auth(username, password)
+    def test_cacerts(self):
+        ca_certs = self.client.cacerts()
 
-common_name = 'test'
-country = 'US'
-state = 'Massachusetts'
-city = 'Boston'
-organization = 'Cisco Systems'
-organizational_unit = 'ENG'
+    def test_simpleenroll(self):
+        self.set_auth()
+        csr = self.create_csr()
+        client_cert = self.client.simpleenroll(csr)
+        x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+            client_cert)
+        self.assertEqual(x509.get_subject().CN, 'test')
+        self.assertEqual(x509.get_issuer().CN, 'estExampleCA')
 
-key, csr = client.create_csr(common_name, country, state, city, organization,
-        organizational_unit)
-print key
-print csr
+    def test_simplereenroll(self):
+        self.set_auth()
+        csr = self.create_csr()
+        client_cert = self.client.simplereenroll(csr)
+        x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+            client_cert)
+        self.assertEqual(x509.get_subject().CN, 'test')
+        self.assertEqual(x509.get_issuer().CN, 'estExampleCA')
 
-client_cert = client.simpleenroll(csr)
-print client_cert
-with open('client.pem', 'w') as f:
-    f.write(client_cert)
 
-client_cert = client.simplereenroll(csr, 'client.pem')
-print client_cert
+if __name__ == '__main__':
+    unittest.main()
 
