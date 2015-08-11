@@ -11,8 +11,6 @@ import OpenSSL.crypto
 
 import est.request
 
-IMPLICIT_TRUST_ANCHOR_CERT_PATH = '/tmp/implicit.pem'
-
 class Client(object):
     """API client.
 
@@ -34,13 +32,14 @@ class Client(object):
 
             port (int): EST server port number.
 
-            cacerts (str): EST server CA certificates path (PEM).
+            implicit_trust_anchor_cert_path (str):
+                EST server implicit trust anchor certificate path.
         """
         self.url_prefix = 'https://%s:%s/.well-known/est' % (host, port)
         self.implicit_trust_anchor_cert_path = implicit_trust_anchor_cert_path
 
     def cacerts(self):
-        """Get CA certificates from the server.
+        """EST /cacerts request.
 
         Args:
             None
@@ -59,6 +58,17 @@ class Client(object):
         return pem
 
     def simpleenroll(self, csr):
+        """EST /simpleenroll request.
+
+        Args:
+            csr (str): Certificate signing request (PEM).
+
+        Returns:
+            str.  Signed certificate (PEM).
+
+        Raises:
+            est.errors.RequestError
+        """
         url = self.url_prefix + '/simpleenroll'
         auth = (self.username, self.password)
         headers = {'Content-Type': 'application/pkcs10'}
@@ -69,6 +79,20 @@ class Client(object):
         return pem
 
     def simplereenroll(self, csr, cert_path=False):
+        """EST /simplereenroll request.
+
+        Args:
+            csr (str): Certificate signing request (PEM).
+
+            cert_path (str): Path to valid client certificate for
+                authentication.
+
+        Returns:
+            str.  Signed certificate (PEM).
+
+        Raises:
+            est.errors.RequestError
+        """
         url = self.url_prefix + '/simplereenroll'
         auth = (self.username, self.password)
         headers = {'Content-Type': 'application/pkcs10'}
@@ -80,12 +104,36 @@ class Client(object):
         return pem
 
     def set_basic_auth(self, username, password):
+        """Set up HTTP Basic authentication.
+
+        Args:
+            username (str).
+
+            password (str).
+        """
         self.username = username
         self.password = password
 
     def create_csr(self, common_name, country, state, city, organization,
-        organizational_unit):
+        organizational_unit, email_address):
         """
+        Args:
+            common_name (str).
+
+            country (str).
+
+            state (str).
+
+            city (str).
+
+            organization (str).
+
+            organizational_unit (str).
+
+            email_address (str).
+
+        Returns:
+            str.  Certificate signing request (PEM).
         """
         key = OpenSSL.crypto.PKey()
         key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
@@ -97,6 +145,7 @@ class Client(object):
         req.get_subject().O = organization
         req.get_subject().OU = organizational_unit
         req.get_subject().CN = common_name
+        req.get_subject().emailAddress = email_address
 
         req.set_pubkey(key)
         req.sign(key, 'sha256')
