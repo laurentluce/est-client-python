@@ -133,7 +133,8 @@ class Client(object):
             email_address (str).
 
         Returns:
-            str.  Certificate signing request (PEM).
+            (str, str).  Tuple containing private key and certificate
+            signing request (PEM).
         """
         key = OpenSSL.crypto.PKey()
         key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
