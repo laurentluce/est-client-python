@@ -114,8 +114,9 @@ class Client(object):
         self.username = username
         self.password = password
 
-    def create_csr(self, common_name, country, state, city, organization,
-        organizational_unit, email_address):
+    def create_csr(self, common_name, country=None, state=None, city=None,
+                   organization=None, organizational_unit=None,
+                   email_address=None):
         """
         Args:
             common_name (str).
@@ -140,13 +141,19 @@ class Client(object):
         key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
 
         req = OpenSSL.crypto.X509Req()
-        req.get_subject().C = country
-        req.get_subject().ST = state
-        req.get_subject().L = city
-        req.get_subject().O = organization
-        req.get_subject().OU = organizational_unit
         req.get_subject().CN = common_name
-        req.get_subject().emailAddress = email_address
+        if country:
+            req.get_subject().C = country
+        if state:
+            req.get_subject().ST = state
+        if city:
+            req.get_subject().L = city
+        if organization:
+            req.get_subject().O = organization
+        if organizational_unit:
+            req.get_subject().OU = organizational_unit
+        if email_address:
+            req.get_subject().emailAddress = email_address
 
         req.set_pubkey(key)
         req.sign(key, 'sha256')

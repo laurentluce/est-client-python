@@ -20,14 +20,10 @@ class Test(unittest.TestCase):
 
     def create_csr(self):
         common_name = 'test'
-        country = 'US'
-        state = 'Massachusetts'
-        city = 'Boston'
         organization = 'Cisco Systems'
-        organizational_unit = 'ENG'
         email_address = 'test@cisco.com'
-        key, csr = self.client.create_csr(common_name, country, state, city,
-            organization, organizational_unit, email_address)
+        key, csr = self.client.create_csr(common_name,
+            organization=organization, email_address=email_address)
         return csr
 
     def test_cacerts(self):
