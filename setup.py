@@ -14,15 +14,15 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "est-client",
+    name = "est",
     version = "0.1",
     author = "Laurent Luce",
-    author_email = "laurentluce49@yahoo.com"
+    author_email = "laurentluce49@yahoo.com",
     description = ('Client to interact with an EST server - RFC 7030.'),
     license = "MIT",
     keywords = "Enrollment secure transport",
-    packages=['est-client'],
-    long_description=read('README'),
+    packages=['est'],
+    long_description=read('README.md'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Topic :: Utilities",
