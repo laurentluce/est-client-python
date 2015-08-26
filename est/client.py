@@ -9,6 +9,7 @@ import subprocess
 
 import OpenSSL.crypto
 
+import est.errors
 import est.request
 
 class Client(object):
@@ -168,8 +169,23 @@ class Client(object):
         return private_key, csr
 
     def pkcs7_to_pem(self, pkcs7):
+        inform = None
+        for filetype in (OpenSSL.crypto.FILETYPE_PEM,
+                         OpenSSL.crypto.FILETYPE_ASN1):
+            try:
+                OpenSSL.crypto.load_pkcs7_data(filetype, pkcs7)
+                if filetype == OpenSSL.crypto.FILETYPE_PEM:
+                    inform = 'PEM'
+                else:
+                    inform = 'DER'
+            except OpenSSL.crypto.Error:
+                pass
+
+        if not inform:
+            raise est.errors.Exception('Invalid PKCS7 data type')
+
         stdout, stderr = subprocess.Popen(
-            ['openssl', 'pkcs7', '-inform', 'DER', '-outform', 'PEM',
+            ['openssl', 'pkcs7', '-inform', inform, '-outform', 'PEM',
              '-print_certs'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             stdin=subprocess.PIPE
