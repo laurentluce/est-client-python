@@ -2,7 +2,7 @@
 
 class Error(Exception):
     """Top error class. All errors should derive this class.
-    
+
     Attributes:
         message (str): Error message.
     """
@@ -13,7 +13,7 @@ class Error(Exception):
 
 class RequestError(Error):
     """Server request error.
-    
+
     Attributes:
         status (int): Error http status code.
         message (str): Error message.
@@ -28,7 +28,7 @@ class RequestError(Error):
         self.message = message
 
     def __str__(self):
-        return "RequestError: status=%s, message=%s" % ( 
+        return "RequestError: status=%s, message=%s" % (
             self.status, self.message)
 
     def __repr__(self):
