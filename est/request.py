@@ -1,5 +1,6 @@
 """HTTP requests to server."""
 
+import base64
 import time
 
 import requests
@@ -97,7 +98,12 @@ def send(method, url, params=None, data=None, headers=None, auth=None,
                 headers=request_headers,
                 timeout=timeout, verify=verify, auth=auth, cert=cert)
             if res.status_code == 200:
-                return res
+                try:
+                    if res.headers['Content-Transfer-Encoding'] == 'base64':
+                        return base64.b64decode(res.content)
+                except KeyError:
+                    pass
+                return res.content
             elif res.status_code in (400, 401, 403, 404, 413):
                 break
         except requests.exceptions.RequestException, exception:

@@ -51,9 +51,10 @@ class Client(object):
             est.errors.RequestError
         """
         url = self.url_prefix + '/cacerts'
-        res = est.request.get(url, verify=self.implicit_trust_anchor_cert_path)
+        content = est.request.get(url,
+            verify=self.implicit_trust_anchor_cert_path)
 
-        pem = ssl.DER_cert_to_PEM_cert(base64.b64decode(res.content))
+        pem = ssl.DER_cert_to_PEM_cert(content)
 
         return pem
 
@@ -72,9 +73,9 @@ class Client(object):
         url = self.url_prefix + '/simpleenroll'
         auth = (self.username, self.password)
         headers = {'Content-Type': 'application/pkcs10'}
-        res = est.request.post(url, csr, auth=auth, headers=headers,
+        content = est.request.post(url, csr, auth=auth, headers=headers,
             verify=self.implicit_trust_anchor_cert_path)
-        pem = self.pkcs7_to_pem(base64.b64decode(res.content))
+        pem = self.pkcs7_to_pem(content)
 
         return pem
 
@@ -96,10 +97,10 @@ class Client(object):
         url = self.url_prefix + '/simplereenroll'
         auth = (self.username, self.password)
         headers = {'Content-Type': 'application/pkcs10'}
-        res = est.request.post(url, csr, auth=auth, headers=headers,
-                verify=self.implicit_trust_anchor_cert_path,
-                cert=cert_path)
-        pem = self.pkcs7_to_pem(base64.b64decode(res.content))
+        content = est.request.post(url, csr, auth=auth, headers=headers,
+            verify=self.implicit_trust_anchor_cert_path,
+            cert=cert_path)
+        pem = self.pkcs7_to_pem(content)
 
         return pem
 
