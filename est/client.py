@@ -55,7 +55,7 @@ class Client(object):
         content = est.request.get(url,
             verify=self.implicit_trust_anchor_cert_path)
 
-        pem = ssl.DER_cert_to_PEM_cert(content)
+        pem = self.pkcs7_to_pem(content)
 
         return pem
 
@@ -178,11 +178,12 @@ class Client(object):
                     inform = 'PEM'
                 else:
                     inform = 'DER'
+                break
             except OpenSSL.crypto.Error:
                 pass
 
         if not inform:
-            raise est.errors.Exception('Invalid PKCS7 data type')
+            raise est.errors.Error('Invalid PKCS7 data type')
 
         stdout, stderr = subprocess.Popen(
             ['openssl', 'pkcs7', '-inform', inform, '-outform', 'PEM',
