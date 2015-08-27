@@ -99,7 +99,8 @@ def send(method, url, params=None, data=None, headers=None, auth=None,
                 timeout=timeout, verify=verify, auth=auth, cert=cert)
             if res.status_code == 200:
                 try:
-                    if res.headers['Content-Transfer-Encoding'] == 'base64':
+                    if (res.headers['Content-Transfer-Encoding'] == 'base64'
+                        and not res.content.startswith('-----BEGIN')):
                         return base64.b64decode(res.content)
                 except KeyError:
                     pass
