@@ -28,6 +28,8 @@ class Test(unittest.TestCase):
 
     def test_cacerts(self):
         ca_certs = self.client.cacerts()
+        lines = ca_certs.split('\n')
+        self.assertEqual(lines[0], 'subject=/CN=estExampleCA')
 
     def test_simpleenroll(self):
         self.set_auth()
