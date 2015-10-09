@@ -97,6 +97,7 @@ def send(method, url, params=None, data=None, headers=None, auth=None,
             res = method(url, params=request_params, data=request_data,
                 headers=request_headers,
                 timeout=timeout, verify=verify, auth=auth, cert=cert)
+            message = res.text
             if res.status_code == 200:
                 try:
                     if (res.headers['Content-Transfer-Encoding'] == 'base64'
@@ -127,7 +128,7 @@ def raise_request_error(res, message):
     Raises:
         est.errors.RequestError
     """
-    if res:
+    if res is not None:
         status = res.status_code
     else:
         status = None
