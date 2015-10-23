@@ -80,14 +80,13 @@ class Client(object):
 
         return pem
 
-    def simplereenroll(self, csr, cert_path=False):
+    def simplereenroll(self, csr, cert=False):
         """EST /simplereenroll request.
 
         Args:
             csr (str): Certificate signing request (PEM).
 
-            cert_path (str): Path to valid client certificate for
-                authentication.
+            cert (tuple): Client cert path and private key path.
 
         Returns:
             str.  Signed certificate (PEM).
@@ -100,7 +99,7 @@ class Client(object):
         headers = {'Content-Type': 'application/pkcs10'}
         content = est.request.post(url, csr, auth=auth, headers=headers,
             verify=self.implicit_trust_anchor_cert_path,
-            cert=cert_path)
+            cert=cert)
         pem = self.pkcs7_to_pem(content)
 
         return pem

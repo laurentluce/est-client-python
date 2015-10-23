@@ -30,7 +30,7 @@ def get(url, params=None, headers=None, retries=3, timeout=10, verify=False,
 
 
     res = send(requests.get, url, params=request_params, headers=headers,
-        retries=retries, timeout=timeout, verify=verify)
+        retries=retries, timeout=timeout, verify=verify, cert=cert)
 
     return res
 
@@ -52,7 +52,7 @@ def post(url, data, headers=None, auth=None, retries=3, timeout=10,
         str: Server response.
     """
     return send(requests.post, url, data=data, headers=headers, auth=auth,
-        retries=retries, timeout=timeout, verify=verify)
+        retries=retries, timeout=timeout, verify=verify, cert=cert)
 
 def send(method, url, params=None, data=None, headers=None, auth=None,
         retries=3, timeout=10, verify=False, cert=False):
