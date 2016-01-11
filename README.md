@@ -1,7 +1,7 @@
 est-client-python
 =================
 
-EST client - RFC 7030
+EST client - RFC 7030 - Enrollment over Secure Transport
 
 ```python
 import est.client
@@ -32,3 +32,8 @@ client_cert = client.simpleenroll(csr)
 
 client_cert = client.simplereenroll(csr)
 ```
+
+Out of Scope:
+
+  - §3.3.3 - Certificate-less TLS Mutual Authentication.
+  - §3.5 - Linking Identity and PoP information.
