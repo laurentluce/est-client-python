@@ -9,6 +9,8 @@ import subprocess
 
 import OpenSSL.crypto
 
+import asn1crypto.core
+
 import est.errors
 import est.request
 
@@ -103,6 +105,26 @@ class Client(object):
         pem = self.pkcs7_to_pem(content)
 
         return pem
+
+    def csrattrs(self):
+        """EST /csrattrs request.
+
+        Returns:
+            OrderedDict.  Example:
+                OrderedDict([(u'0', u'1.3.6.1.1.1.1.22'),
+                             (u'1', u'1.2.840.113549.1.9.1'),
+                             (u'2', u'1.3.132.0.34'),
+                             (u'3', u'2.16.840.1.101.3.4.2.2')])
+
+        Raises:
+            est.errors.RequestError
+        """
+        url = self.url_prefix + '/csrattrs'
+        content = est.request.get(url,
+            verify=self.implicit_trust_anchor_cert_path)
+
+        parsed = asn1crypto.core.Sequence.load(content)
+        return parsed.native
 
     def set_basic_auth(self, username, password):
         """Set up HTTP Basic authentication.

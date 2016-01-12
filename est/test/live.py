@@ -49,6 +49,9 @@ class Test(unittest.TestCase):
         self.assertEqual(x509.get_subject().CN, 'test')
         self.assertEqual(x509.get_issuer().CN, 'estExampleCA')
 
+    def test_csrattrs(self):
+        self.client.csrattrs()
+
 
 if __name__ == '__main__':
     unittest.main()

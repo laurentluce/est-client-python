@@ -1,2 +1,3 @@
 requests>=2.2.1
 pyopenssl>=0.13
+asn1crypto>=0.15.1
