@@ -108,7 +108,7 @@ def send(method, url, params=None, data=None, headers=None, auth=None,
                 return res.content
             elif res.status_code in (400, 401, 403, 404, 413):
                 break
-        except requests.exceptions.RequestException, exception:
+        except (requests.exceptions.RequestException) as exception:
             message = str(exception)
             res = None
 
