@@ -101,12 +101,12 @@ def send(method, url, params=None, data=None, headers=None, auth=None,
             if res.status_code == 200:
                 try:
                     if (res.headers['Content-Transfer-Encoding'] == 'base64'
-                        and not res.content.startswith('-----BEGIN')):
+                        and not res.content.startswith(b'-----BEGIN')):
                         return base64.b64decode(res.content)
                 except KeyError:
                     pass
                 return res.content
-            elif res.status_code in (400, 401, 403, 404, 413):
+            elif res.status_code in (400, 401, 403, 404, 413, 202):
                 break
         except (requests.exceptions.RequestException) as exception:
             message = str(exception)
@@ -133,4 +133,7 @@ def raise_request_error(res, message):
     else:
         status = None
 
-    raise est.errors.RequestError(status, message)
+    if status == 202:
+        raise est.errors.TryLater(int(res.headers['retry-after']), message)
+    else:
+        raise est.errors.RequestError(status, message)

@@ -139,7 +139,7 @@ class Client(object):
 
     def create_csr(self, common_name, country=None, state=None, city=None,
                    organization=None, organizational_unit=None,
-                   email_address=None):
+                   email_address=None, subject_alt_name=None):
         """
         Args:
             common_name (str).
@@ -155,6 +155,8 @@ class Client(object):
             organizational_unit (str).
 
             email_address (str).
+
+            subject_alt_name (str).
 
         Returns:
             (str, str).  Tuple containing private key and certificate
@@ -177,6 +179,9 @@ class Client(object):
             req.get_subject().OU = organizational_unit
         if email_address:
             req.get_subject().emailAddress = email_address
+        if subject_alt_name:
+            altName = OpenSSL.crypto.X509Extension('subjectAltName', False, subject_alt_name)
+            req.add_extensions([altName])
 
         req.set_pubkey(key)
         req.sign(key, 'sha256')
@@ -213,4 +218,4 @@ class Client(object):
             stdin=subprocess.PIPE
         ).communicate(pkcs7)
 
-        return stdout
+        return stdout.decode("utf-8")

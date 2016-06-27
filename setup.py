@@ -15,7 +15,7 @@ def read(fname):
 
 setup(
     name = "est",
-    version = "0.2",
+    version = "0.2.1",
     author = "Laurent Luce",
     author_email = "laurentluce49@yahoo.com",
     description = ('Client to interact with an EST server - RFC 7030.'),
@@ -24,7 +24,8 @@ setup(
     packages=['est'],
     install_requires=[
         'pyOpenSSL',
-        'asn1crypto'
+        'asn1crypto',
+        'requests'
     ],
     long_description=read('README.md'),
     classifiers=[
