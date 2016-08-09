@@ -15,13 +15,18 @@ def read(fname):
 
 setup(
     name = "est",
-    version = "0.1",
+    version = "0.2.1",
     author = "Laurent Luce",
     author_email = "laurentluce49@yahoo.com",
     description = ('Client to interact with an EST server - RFC 7030.'),
     license = "MIT",
     keywords = "Enrollment secure transport",
     packages=['est'],
+    install_requires=[
+        'pyOpenSSL',
+        'asn1crypto',
+        'requests'
+    ],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
